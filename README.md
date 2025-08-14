@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ChatGPT Mobile Clone (Next.js + tRPC + Bootstrap + Supabase + Auth0 + Gemini)
 
 Mobile-only Chat UI using Next.js App Router, tRPC, Bootstrap 5, Supabase (messages), Auth0 (login), and Google Gemini (text + image).
@@ -54,3 +55,6 @@ Add the same for your Vercel domain after deployment.
 
 ```
 
+=======
+# chatgpt-clone
+>>>>>>> c91394a64d7d4cb26520dbc73d30cd948fadc1ea
