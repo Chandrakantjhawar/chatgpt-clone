@@ -10,7 +10,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => new QueryClient());
   const [trpcClient] = React.useState(() =>
     trpc.createClient({
-      transformer: superjson, // ✅ required in tRPC v10
+      transformer: superjson, // ✅ root-level, not inside links
       links: [
         httpBatchLink({
           url:
@@ -25,7 +25,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <UserProvider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </trpc.Provider>
     </UserProvider>
   );
