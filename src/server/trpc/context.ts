@@ -1,12 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@auth0/nextjs-auth0';
+// src/server/trpc/context.ts
+import { getSession } from '@auth0/nextjs-auth0/edge';
 import { createClient } from '@supabase/supabase-js';
 
-export async function createTRPCContext(opts: { req: NextApiRequest; res: NextApiResponse }) {
-  // Get the Auth0 session
-  const session = await getSession(opts.req, opts.res);
+export async function createTRPCContext({ req }: { req: Request }) {
+  const session = await getSession(req); // no Response needed
 
-  // Create a Supabase client (server-side only)
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -14,7 +12,7 @@ export async function createTRPCContext(opts: { req: NextApiRequest; res: NextAp
   );
 
   return {
-    user: session?.user || null,
+    user: session?.user ?? null,
     supabase,
   };
 }
