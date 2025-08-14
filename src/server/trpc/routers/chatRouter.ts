@@ -5,7 +5,14 @@ import { ai, TEXT_MODEL, IMAGE_MODEL } from '@/server/ai/gemini';
 
 const t = initTRPC.context<Context>().create();
 
+// Type for AI response
+type AIResponse = {
+  candidates?: { content?: { parts?: { text?: string; inlineData?: { data?: string } }[] } }[];
+  text?: string | (() => string);
+};
+
 export const chatRouter = t.router({
+  // List messages for logged-in user
   listMessages: t.procedure.query(async ({ ctx }) => {
     try {
       if (!ctx.user) return [];
@@ -26,12 +33,13 @@ export const chatRouter = t.router({
     }
   }),
 
+  // Send a chat message and get AI reply
   sendMessage: t.procedure
     .input(z.object({ content: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) throw new Error('Unauthorized');
-
       try {
+        // Save user message
         await ctx.supabase.from('messages').insert({
           user_sub: ctx.user.sub,
           role: 'user',
@@ -42,17 +50,21 @@ export const chatRouter = t.router({
           throw new Error('GEMINI_API_KEY is not set');
         }
 
+        // Call Gemini AI
         const resp = await ai.models.generateContent({
           model: TEXT_MODEL,
           contents: [{ role: 'user', parts: [{ text: input.content }] }],
         });
 
-        const part: any = resp?.candidates?.[0]?.content?.parts?.[0];
-        const reply: string =
+        // Type-safe extraction of AI text
+        const respTyped = resp as AIResponse;
+        const part = respTyped.candidates?.[0]?.content?.parts?.[0];
+        const reply =
           part?.text ??
-          (typeof resp.text === 'function' ? resp.text() : '') ??
+          (typeof respTyped.text === 'function' ? respTyped.text() : respTyped.text ?? '') ??
           '(no response)';
 
+        // Save AI reply
         const { error } = await ctx.supabase.from('messages').insert({
           user_sub: ctx.user.sub,
           role: 'assistant',
@@ -67,10 +79,13 @@ export const chatRouter = t.router({
         return { reply };
       } catch (err) {
         console.error('sendMessage failed:', err);
-        throw new Error(`sendMessage failed: ${err instanceof Error ? err.message : String(err)}`);
+        throw new Error(
+          `sendMessage failed: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }),
 
+  // Generate AI image
   generateImage: t.procedure
     .input(z.object({ prompt: z.string().min(3) }))
     .mutation(async ({ ctx, input }) => {
@@ -87,7 +102,8 @@ export const chatRouter = t.router({
           config: { responseMimeType: 'image/png' as any },
         });
 
-        const part: any = res?.candidates?.[0]?.content?.parts?.[0];
+        const part: { inlineData?: { data?: string }; data?: string } | undefined =
+          res?.candidates?.[0]?.content?.parts?.[0];
         const b64 = part?.inlineData?.data || part?.data || '';
         if (!b64) throw new Error('No image returned from Gemini');
 
@@ -107,7 +123,9 @@ export const chatRouter = t.router({
         return { imageUrl: dataUrl };
       } catch (err) {
         console.error('generateImage failed:', err);
-        throw new Error(`generateImage failed: ${err instanceof Error ? err.message : String(err)}`);
+        throw new Error(
+          `generateImage failed: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }),
 });
