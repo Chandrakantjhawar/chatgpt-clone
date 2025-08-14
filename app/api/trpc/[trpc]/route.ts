@@ -1,13 +1,14 @@
 // app/api/trpc/[trpc]/route.ts
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from '@/server/api/root';
+import { appRouter } from '@/server/trpc/router';
 import { createTRPCContext } from '@/server/trpc/context';
 
-export const handler = (req: Request) =>
+// Edge-style handler
+export const GET = (req: Request) =>
   fetchRequestHandler({
     req,
     router: appRouter,
     createContext: () => createTRPCContext({ req }),
   });
 
-export { handler as GET, handler as POST };
+export const POST = GET;

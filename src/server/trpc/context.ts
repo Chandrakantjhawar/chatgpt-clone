@@ -3,7 +3,8 @@ import { getSession } from '@auth0/nextjs-auth0/edge';
 import { createClient } from '@supabase/supabase-js';
 
 export async function createTRPCContext({ req }: { req: Request }) {
-  const session = await getSession(req); // no Response needed
+  // Use the Edge version of getSession
+  const session = await getSession(req); 
 
   const supabase = createClient(
     process.env.SUPABASE_URL!,
