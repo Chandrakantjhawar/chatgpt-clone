@@ -1,0 +1,16 @@
+# Auth0
+AUTH0_SECRET=replace_with_long_random_string
+AUTH0_BASE_URL=http://localhost:3000
+AUTH0_ISSUER_BASE_URL=https://YOUR_TENANT_REGION.auth0.com
+AUTH0_CLIENT_ID=your_auth0_client_id
+AUTH0_CLIENT_SECRET=your_auth0_client_secret
+
+# Supabase (server-side usage only in this starter)
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Google AI Studio (Gemini)
+GEMINI_API_KEY=your_google_ai_studio_key
+
+# App
+NODE_ENV=development
