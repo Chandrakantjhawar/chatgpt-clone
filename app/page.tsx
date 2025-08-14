@@ -86,7 +86,7 @@ export default function Page() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <button className="btn btn-primary" disabled={send.isLoading || genImg.isLoading}>
+          <button className="btn btn-primary" disabled={send.isPending || genImg.isPending}>
             Send
           </button>
         </div>
