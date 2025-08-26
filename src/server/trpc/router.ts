@@ -1,4 +1,3 @@
-// src/server/trpc/router.ts
 import { t } from './trpc';
 import { chatRouter } from './routers/chatRouter';
 

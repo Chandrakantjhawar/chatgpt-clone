@@ -24,7 +24,9 @@ export default function Page() {
           </div>
         </div>
         <Link href="/api/auth/login" className="btn btn-primary btn-sm">Sign in</Link>
-        <p className="small-muted small m-0">Sign in to start chatting and generating images.</p>
+        <p className="small-muted small m-0">
+          Sign in to start chatting and generating images.
+        </p>
       </div>
     );
   }
