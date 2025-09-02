@@ -9,13 +9,16 @@ export default function Page() {
   const list = trpc.chat.listMessages.useQuery(undefined, { enabled: !!user });
   const send = trpc.chat.sendMessage.useMutation({ onSuccess: () => list.refetch() });
   const genImg = trpc.chat.generateImage.useMutation({ onSuccess: () => list.refetch() });
+  const editMsg = trpc.chat.editMessage.useMutation({ onSuccess: () => list.refetch() });
+  const deleteMsg = trpc.chat.deleteMessage.useMutation({ onSuccess: () => list.refetch() });
+
   const [input, setInput] = React.useState('');
 
   if (userLoading) return <p>Loading user…</p>;
 
   if (!user) {
     return (
-      <div className="d-flex flex-column gap-3">
+      <div className="mobile-shell d-flex flex-column vh-100 gap-3">
         <div className="d-flex align-items-center gap-2">
           <div className="rounded-circle bg-primary" style={{ width: 40, height: 40 }} />
           <div>
@@ -44,7 +47,7 @@ export default function Page() {
   };
 
   return (
-    <div className="d-flex flex-column gap-3">
+    <div className="mobile-shell d-flex flex-column vh-100 gap-3">
       <header className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
           <div className="rounded-circle bg-primary" style={{ width: 40, height: 40 }} />
@@ -56,15 +59,16 @@ export default function Page() {
         <Link className="btn btn-outline-light btn-sm" href="/api/auth/logout">Logout</Link>
       </header>
 
-      <section className="bg-body-tertiary rounded-4 p-3" style={{ minHeight: 420 }}>
+      <section className="bg-body-tertiary rounded-4 p-3 flex-grow-1 overflow-auto" style={{ minHeight: 420 }}>
         {list.isLoading && <p>Loading messages…</p>}
         {list.isError && <p className="text-danger">Error loading messages.</p>}
         {Array.isArray(list.data) && list.data.length === 0 && !list.isLoading && (
           <p className="text-muted">No messages yet. Start the conversation!</p>
         )}
+
         {Array.isArray(list.data) &&
           list.data.map((m: any) => (
-            <div key={m.id} className={`mb-3 ${m.role === 'user' ? 'text-end' : ''}`}>
+            <div key={m.id} className={`message-container ${m.role === 'user' ? 'user' : 'assistant'}`}>
               <div className={`bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-assistant'}`}>
                 <div style={{ whiteSpace: 'pre-wrap' }}>{m.content}</div>
                 {m.image_url && (
@@ -74,6 +78,37 @@ export default function Page() {
                     alt="generated"
                     style={{ maxWidth: '100%', borderRadius: 8, marginTop: 6 }}
                   />
+                )}
+                {/* ✅ Timestamp */}
+    <div className="small text-muted mt-1">
+      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+    </div>
+
+                {/* ✅ Edit/Delete only for user messages */}
+                {m.role === 'user' && (
+                  <div className="d-flex gap-2 mt-1">
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => {
+                        const newContent = prompt('Edit message:', m.content);
+                        if (newContent && newContent.trim()) {
+                          editMsg.mutate({ id: m.id, newContent }); // 👈 id is string (UUID)
+                        }
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => {
+                        if (confirm('Delete this message?')) {
+                          deleteMsg.mutate({ id: m.id }); // 👈 id is string (UUID)
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
